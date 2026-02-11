@@ -1,0 +1,49 @@
+/* src/style.css */
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #000;
+  color: white;
+  font-family: 'Verdana', sans-serif;
+  /* Eliminamos el centrado forzado que traía el archivo original */
+  display: block; 
+  min-height: 100vh;
+}
+
+/* Fondo degradado del juego */
+.bg-millionaire {
+  background: radial-gradient(circle at center, #0b276b 0%, #020b30 60%, #000000 100%) !important;
+  min-height: 100vh;
+}
+
+/* Colores de marca */
+.text-gold {
+  color: #d4af37 !important;
+}
+
+.border-gold {
+  border: 2px solid #d4af37;
+}
+
+/* Botones de respuesta estilo Millonario */
+.btn-option {
+  background: linear-gradient(to bottom, #0f368e, #051445) !important;
+  border: 2px solid #6b8cce !important;
+  border-radius: 20px;
+  color: white !important;
+  transition: all 0.3s;
+  text-transform: none; /* Para que no fuerce mayúsculas */
+}
+
+/* Efecto Hover para los botones */
+.btn-option:hover {
+  background: #d4af37 !important;
+  color: black !important;
+  border-color: white !important;
+}
+
+/* Ajuste para el contenedor principal de Quasar */
+#q-app {
+  width: 100%;
+}
