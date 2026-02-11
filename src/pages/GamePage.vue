@@ -189,7 +189,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useGameStore } from '../stores/gameStore.js';
 import { useRouter } from 'vue-router';
 import { moneyTree } from '../stores/data/questions.js';
@@ -212,10 +212,6 @@ const answerSelected = ref(false);
 
 // Votos del público
 const audienceVotes = ref([0, 0, 0, 0]);
-
-onMounted(() => {
-  playBackgroundMusic();
-});
 
 // Detener sonidos cuando se cierran los dialogs
 watch(showHelpDialog, (newVal) => {

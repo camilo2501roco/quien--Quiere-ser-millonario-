@@ -59,7 +59,6 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useGameStore } from '../stores/gameStore';
 import { useAudio } from '../composables/useAudio';
@@ -68,11 +67,9 @@ const router = useRouter();
 const store = useGameStore();
 const { playSound, playBackgroundMusic, toggleMute, isMuted } = useAudio();
 
-onMounted(() => {
-  playBackgroundMusic();
-});
-
 const start = () => {
+  // Iniciar música en la primera interacción del usuario
+  playBackgroundMusic();
   playSound('buttonClick', 0.6);
   store.initGame();
   
