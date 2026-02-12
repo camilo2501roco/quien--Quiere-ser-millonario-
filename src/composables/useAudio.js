@@ -1,21 +1,10 @@
 import { ref } from 'vue'
 
-// Mapeo de sonidos del juego (simplificado)
+// Mapeo de sonidos del juego
+// NOTA: Solo se usa la música de fondo
 const sounds = {
-    // Música de fondo
-    background: '/audio/background.mp3',
-
-    // Efectos principales
-    buttonClick: '/audio/button-click.mp3',
-    correctAnswer: '/audio/correct-answer.mp3',
-    wrongAnswer: '/audio/wrong-answer.mp3',
-
-    // Ayudas (un solo sonido genérico)
-    lifeline: '/audio/lifeline.mp3',
-
-    // Victoria/Derrota
-    victory: '/audio/victory.mp3',
-    defeat: '/audio/defeat.mp3'
+    // Música de fondo - único sonido del juego
+    background: '/audio/background.mp3'
 }
 
 // Audio instances cache

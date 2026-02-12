@@ -91,7 +91,7 @@ import { useAudio } from '../composables/useAudio';
 
 const store = useGameStore();
 const router = useRouter();
-const { playSound, toggleMute, isMuted } = useAudio();
+const { playSound, stopBackgroundMusic, toggleMute, isMuted } = useAudio();
 
 const lifelinesUsed = computed(() => {
   let count = 0;
@@ -114,15 +114,13 @@ const motivationalMessage = computed(() => {
 });
 
 onMounted(() => {
-  if (store.gameStatus === 'won') {
-    playSound('victory', 0.7);
-  } else {
-    playSound('defeat', 0.5);
+  // Detener la música de fondo cuando el jugador pierde
+  if (store.gameStatus !== 'won') {
+    stopBackgroundMusic();
   }
 });
 
 const restart = () => {
-  playSound('buttonClick', 0.6);
   store.initGame();
   setTimeout(() => {
     router.push('/game');
@@ -130,7 +128,6 @@ const restart = () => {
 };
 
 const goHome = () => {
-  playSound('buttonClick', 0.6);
   setTimeout(() => {
     router.push('/');
   }, 300);

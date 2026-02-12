@@ -70,7 +70,6 @@ const { playSound, playBackgroundMusic, toggleMute, isMuted } = useAudio();
 const start = () => {
   // Iniciar música en la primera interacción del usuario
   playBackgroundMusic();
-  playSound('buttonClick', 0.6);
   store.initGame();
   
   setTimeout(() => {

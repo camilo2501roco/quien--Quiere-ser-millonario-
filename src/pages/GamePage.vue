@@ -4,12 +4,21 @@
     <!-- Área principal del juego -->
     <div class="col-12 col-md-9 flex column justify-between q-pa-md relative-position">
       
-      <!-- Header con nivel y dinero -->
+      <!-- Header con nivel, dinero y temporizador -->
       <div class="row justify-between items-center q-mb-md header-info">
         <div class="text-gold text-h6 text-weight-bold level-badge">
           <q-icon name="star" size="sm" class="q-mr-xs" />
           Nivel {{ store.currentLevelIndex + 1 }} de 15
         </div>
+        
+        <!-- Temporizador -->
+        <div class="timer-display" :class="{ 'timer-warning': store.timeLeft <= 10 }">
+          <q-icon name="timer" size="md" class="q-mr-xs" />
+          <div class="timer-value">
+            {{ formatTime(store.timeLeft) }}
+          </div>
+        </div>
+        
         <div class="money-display">
           <div class="text-caption text-grey-4">Dinero acumulado</div>
           <div class="text-gold text-h5 text-weight-bold">${{ store.moneyWon }}</div>
@@ -152,7 +161,6 @@
               <div class="audience-bar-wrapper">
                 <div 
                   class="audience-bar"
-                  :class="{ 'bar-highlight': idx === store.currentQuestion.answer }"
                   :style="{ width: percentage + '%' }"
                 >
                   <span class="bar-percentage">{{ percentage }}%</span>
@@ -189,7 +197,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue';
 import { useGameStore } from '../stores/gameStore.js';
 import { useRouter } from 'vue-router';
 import { moneyTree } from '../stores/data/questions.js';
@@ -213,18 +221,24 @@ const answerSelected = ref(false);
 // Votos del público
 const audienceVotes = ref([0, 0, 0, 0]);
 
-// Detener sonidos cuando se cierran los dialogs
-watch(showHelpDialog, (newVal) => {
-  if (!newVal) {
-    stopSound('lifeline');
-  }
+// Formatear tiempo MM:SS
+const formatTime = (seconds) => {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
+
+// Iniciar temporizador cuando se monta el componente
+onMounted(() => {
+  store.startTimer();
 });
 
-watch(showAudienceDialog, (newVal) => {
-  if (!newVal) {
-    stopSound('lifeline');
-  }
+// Detener temporizador cuando se desmonta el componente
+onUnmounted(() => {
+  store.stopTimer();
 });
+
+// Watchers para dialogs (sin necesidad de detener sonidos)
 
 // --- LÓGICA DE JUEGO ---
 
@@ -232,21 +246,12 @@ const selectAnswer = (index) => {
   if (answerSelected.value) return;
   
   answerSelected.value = true;
+  store.stopTimer(); // Detener el temporizador al responder
   
-  // Detener cualquier sonido activo antes de la respuesta final
-  stopAllSounds();
-  
-  // Pequeña pausa antes del sonido de botón
-  setTimeout(() => {
-    playSound('buttonClick', 0.5, false, true);
-  }, 100);
-
   // Pausa dramática
   setTimeout(() => {
     if (index === store.currentQuestion.answer) {
       // RESPUESTA CORRECTA
-      playSound('correctAnswer', 0.6, false, true);
-      
       if (store.currentLevelIndex === 14) {
         // Último nivel - ir a resultado
         store.progressLevel();
@@ -258,17 +263,15 @@ const selectAnswer = (index) => {
         setTimeout(() => {
           store.progressLevel();
           answerSelected.value = false;
-          // No reproducir sonido aquí, la nueva pregunta aparece automáticamente
+          store.startTimer(); // Reiniciar el temporizador para la siguiente pregunta
         }, 1500);
       }
     } else {
       // RESPUESTA INCORRECTA
-      playSound('wrongAnswer', 0.6, false, true);
-      
       store.endGame(false);
       setTimeout(() => {
         router.push('/result');
-      }, 2500);
+      }, 1500);
     }
   }, 1000);
 };
@@ -277,8 +280,6 @@ const selectAnswer = (index) => {
 
 const usePhone = () => {
   store.lifelines.phone = false;
-  stopAllSounds();
-  playSound('lifeline', 0.4);
   
   const correct = store.currentQuestion.answer;
   const letters = ['A', 'B', 'C', 'D'];
@@ -293,8 +294,6 @@ const usePhone = () => {
 
 const useAudience = () => {
   store.lifelines.audience = false;
-  stopAllSounds();
-  playSound('lifeline', 0.4);
   
   const correct = store.currentQuestion.answer;
   
@@ -325,8 +324,6 @@ const useAudience = () => {
 
 const useStats = () => {
   store.lifelines.stats = false;
-  stopAllSounds();
-  playSound('lifeline', 0.4);
   
   const correct = store.currentQuestion.answer;
   const letters = ['A', 'B', 'C', 'D'];
@@ -366,6 +363,50 @@ const getMoneyClass = (levelIndex) => {
 .money-display {
   text-align: right;
   animation: fadeInRight 0.5s ease-out;
+}
+
+/* Temporizador */
+.timer-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(107, 140, 206, 0.3) 0%, rgba(58, 80, 107, 0.3) 100%);
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: 2px solid #6b8cce;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.timer-value {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #6b8cce;
+  min-width: 60px;
+  text-align: center;
+}
+
+.timer-warning {
+  border-color: #ef5350;
+  animation: pulse-warning 1s ease-in-out infinite;
+}
+
+.timer-warning .timer-value {
+  color: #ef5350;
+}
+
+.timer-warning .q-icon {
+  color: #ef5350;
+}
+
+@keyframes pulse-warning {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(239, 83, 80, 0.4);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(239, 83, 80, 0.8);
+    transform: scale(1.05);
+  }
 }
 
 /* Pregunta mejorada */
